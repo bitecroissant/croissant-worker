@@ -46,13 +46,9 @@ const eventSchema = object({
 })
 
 /**
- * query user pin
+ * 24节气
  */
-app.get('/greeting', async (c) => {
-  const db = drizzle(env.db_for_croissant)
-  const pins = await db.select().from(usersPin).all()
-  return c.json(pins)
-})
+app.post('/solarTerms', authenticateUser, async)
 
 /**
  * 创建 event
@@ -66,7 +62,9 @@ app.post('/events', authenticateUser, async (c) => {
   const eventId = uuidv7()
   const timestampStr = time().format('yyyy-MM-dd HH:mm:ss fff')
   const newEvent = { id: eventId, name, isLoop, isPin, gmt_create: timestampStr, gmt_modified: timestampStr, userId }
-  await env.kv_for_croissant.put(`${userId}_${eventId}`, JSON.stringify(newEvent))
+
+  const db = drizzle(env.db_for_croissant)
+  // db.insert()
 
   return c.json(newEvent)
 })
@@ -79,6 +77,18 @@ app.get('/events', authenticateUser, async (c) => {
   const userKeys = await env.kv_for_croissant.list({ prefix: `${userId}` })
   const userEvents = await Promise.all(userKeys.keys.map(({ name }) => env.kv_for_croissant.get(name)))
   return c.json(userEvents)
+})
+
+/**
+ * query user pin
+ */
+app.get('/greeting/:pin', async (c) => {
+  const pin = c.req.param('pin');
+  // pin -> userId
+  // userId -> events
+  const db = drizzle(env.db_for_croissant)
+  const pins = await db.select().from(usersPin).all()
+  return c.json(pins)
 })
 
 // Only for preview
