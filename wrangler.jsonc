@@ -5,19 +5,20 @@
   "compatibility_date": "2025-04-12",
   "dev": {
     "port": 8888
-  }
+  },
   // "compatibility_flags": [
   //   "nodejs_compat"
   // ],
   // "vars": {
   //   "MY_VAR": "my-variable"
   // },
-  // "kv_namespaces": [
-  //   {
-  //     "binding": "MY_KV_NAMESPACE",
-  //     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-  //   }
-  // ],
+  "kv_namespaces": [
+    {
+      "binding": "kv_for_croissant",
+      "id": "160aad51e6714323a34bb6901d6f8882",
+      "preview_id": "160aad51e6714323a34bb6901d6f8882"
+    }
+  ],
   // "r2_buckets": [
   //   {
   //     "binding": "MY_BUCKET",
