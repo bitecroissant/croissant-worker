@@ -11,6 +11,9 @@ importers:
       hono:
         specifier: 4.7.6
         version: 4.7.6
+      uuid:
+        specifier: 11.1.0
+        version: 11.1.0
     devDependencies:
       '@cloudflare/workers-types':
         specifier: 4.20250412.0
@@ -478,6 +481,10 @@ packages:
   unenv@2.0.0-rc.15:
     resolution: {integrity: sha512-J/rEIZU8w6FOfLNz/hNKsnY+fFHWnu9MH4yRbSZF3xbbGHovcetXPs7sD+9p8L6CeNC//I9bhRYAOsBt2u7/OA==}
 
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
+
   workerd@1.20250409.0:
     resolution: {integrity: sha512-hqjX9swiHvrkOI3jlH9lrZsZRRv9lddUwcMe8Ua76jnyQz+brybWznNjHu8U5oswwcrFwvky1A4CcLjcLY31gQ==}
     engines: {node: '>=16'}
@@ -885,6 +892,8 @@ snapshots:
       ohash: 2.0.11
       pathe: 2.0.3
       ufo: 1.6.1
+
+  uuid@11.1.0: {}
 
   workerd@1.20250409.0:
     optionalDependencies:
