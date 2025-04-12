@@ -7,6 +7,8 @@ import { assert, boolean, object, optional, string, StructError } from 'superstr
 import { authenticateUser } from './middleware'
 import { CoolerError } from './CustomerError'
 import { cors } from 'hono/cors'
+import { drizzle } from 'drizzle-orm/d1'
+import { usersPin } from './db/schema'
 
 type Context = {
   Variables: {
@@ -41,6 +43,15 @@ const eventSchema = object({
   name: string(),
   isLoop: optional(boolean()),
   isPin: optional(boolean()),
+})
+
+/**
+ * query user pin
+ */
+app.get('/greeting', async (c) => {
+  const db = drizzle(env.db_for_croissant)
+  const pins = await db.select().from(usersPin).all()
+  return c.json(pins)
 })
 
 /**

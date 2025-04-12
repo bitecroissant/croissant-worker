@@ -2,9 +2,18 @@
   "name": "croissant-worker",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy --minify"
+    "deploy": "wrangler deploy --minify",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:pull": "drizzle-kit pull",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:check": "drizzle-kit check",
+    "db:up": "drizzle-kit up"
   },
   "dependencies": {
+    "dotenv": "16.5.0",
+    "drizzle-orm": "0.41.0",
     "hono": "4.7.6",
     "jose": "6.0.10",
     "superstruct": "2.0.2",
@@ -12,6 +21,9 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "4.20250412.0",
+    "@types/node": "22.14.1",
+    "drizzle-kit": "0.30.6",
+    "tsx": "4.19.3",
     "wrangler": "4.10.0"
   }
 }

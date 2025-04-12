@@ -24,20 +24,20 @@
       "pattern": "api.bytejelly.uno",
       "custom_domain": true
     }
-  ]
+  ],
   // "r2_buckets": [
   //   {
   //     "binding": "MY_BUCKET",
   //     "bucket_name": "my-bucket"
   //   }
   // ],
-  // "d1_databases": [
-  //   {
-  //     "binding": "MY_DB",
-  //     "database_name": "my-database",
-  //     "database_id": ""
-  //   }
-  // ],
+  "d1_databases": [
+    {
+      "binding": "db_for_croissant",
+      "database_name": "db_for_croissant",
+      "database_id": "1472252f-568f-46cc-b4ed-4a5ca3667bf8"
+    }
+  ],
   // "ai": {
   //   "binding": "AI"
   // },
