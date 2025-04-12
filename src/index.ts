@@ -10,8 +10,7 @@ import { cors } from 'hono/cors'
 
 type Context = {
   Variables: {
-    jwt: string
-    user_id: string
+    userId: string
   }
 }
 const app = new Hono<Context>()
@@ -48,7 +47,7 @@ const eventSchema = object({
  * 创建 event
  */
 app.post('/events', authenticateUser, async (c) => {
-  const userId = c.get('user_id')
+  const userId = c.get('userId')
   const createForm = await c.req.json<EventType>()
   assert(createForm, eventSchema)
 
@@ -65,19 +64,17 @@ app.post('/events', authenticateUser, async (c) => {
  * 获取 event
  */
 app.get('/events', authenticateUser, async (c) => {
-  const userId = c.get('user_id')
+  const userId = c.get('userId')
   const userKeys = await env.kv_for_croissant.list({ prefix: `${userId}` })
   const userEvents = await Promise.all(userKeys.keys.map(({ name }) => env.kv_for_croissant.get(name)))
   return c.json(userEvents)
 })
 
 // Only for preview
-app.get('/', authenticateUser,(c) => {
-  const jwt = c.get('jwt')
-  const userId = c.get('user_id')
-  console.log(jwt)
+app.get('/me', authenticateUser,(c) => {
+  const userId = c.get('userId')
   console.log(userId)
-  return c.text("hello gua, " + jwt + " " + userId)
+  return c.text("hello gua, " + userId)
 })
 
 app.get('/error', (c) => {
