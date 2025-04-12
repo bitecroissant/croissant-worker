@@ -6,6 +6,7 @@ import { ContentfulStatusCode } from 'hono/utils/http-status'
 import { assert, boolean, object, optional, string, StructError } from 'superstruct'
 import { authenticateUser } from './middleware'
 import { CoolerError } from './CustomerError'
+import { cors } from 'hono/cors'
 
 type Context = {
   Variables: {
@@ -15,6 +16,7 @@ type Context = {
 }
 const app = new Hono<Context>()
 
+// 异常处理
 app.onError((error, c) => {
   let status: ContentfulStatusCode = 500
   if (error instanceof CoolerError) {
@@ -24,6 +26,9 @@ app.onError((error, c) => {
   }
   return c.json({ error: error.message }, status)
 })
+
+// 允许跨域
+app.use('*', cors({ origin: '*', maxAge: 3600 * 6, credentials: true }))
 
 type EventType = {
   name: string
