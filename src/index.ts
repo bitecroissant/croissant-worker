@@ -1,109 +1,84 @@
-import { env } from 'cloudflare:workers'
 import { Hono } from 'hono'
-import { v7 as uuidv7 } from 'uuid'
-import { time } from './lib/time'
-import { ContentfulStatusCode } from 'hono/utils/http-status'
-import { assert, boolean, object, optional, string, StructError } from 'superstruct'
 import { authenticateUser } from './middleware'
-import { CoolerError } from './CustomerError'
 import { cors } from 'hono/cors'
-import { drizzle } from 'drizzle-orm/d1'
-import { usersPin } from './db/schema'
+import { batchCreateSolarTermsDates, createSolarTerm, getNextSolarTerm, listSolarTerms, listSolarTermsDates, updateSolarTerm, deleteSolarTerm, destroySolarTerm, deleteSolarTermDate, destroySolarTermDate } from './module/solarTermsFacade'
+import { createEvent, createEventDate, deleteEvent, deleteEventDate, destroyEvent, destroyEventDate, invalidEventDate, listActiveEventsDates, listEvents, updateEvent } from './module/eventsFacade'
+import { createPoetryLine, deltePoetryLine, destroyPoetryLine, getNextPoetryLine, listPoetryLines, updatePoetryLine } from './module/poetryLinesFacade'
+import { greeting } from './module/greetingFacade'
+import { batchCreateHolidaysDates, createHoliday, deleteHoliday, deleteHolidayDate, destroyHoliday, destroyHolidayDate, getNextHoliday, listHolidays, listHolidaysDates, updateHoliday } from './module/holidayFacade'
+import { errorHandler } from './exception/errorHandler'
 
 type Context = {
   Variables: {
     userId: string
   }
 }
+
 const app = new Hono<Context>()
-
-// 异常处理
-app.onError((error, c) => {
-  let status: ContentfulStatusCode = 500
-  if (error instanceof CoolerError) {
-    status = error.status
-  } else if (error instanceof StructError) {
-    status = 400
-  }
-  return c.json({ error: error.message }, status)
-})
-
-// 允许跨域
-app.use('*', cors({ origin: '*', maxAge: 3600 * 6, credentials: true }))
-
-type EventType = {
-  name: string
-  // 循环
-  isLoop: boolean
-  // 置顶
-  isPin: boolean
-}
-
-const eventSchema = object({
-  name: string(),
-  isLoop: optional(boolean()),
-  isPin: optional(boolean()),
-})
 
 /**
  * 24节气
  */
-app.post('/solarTerms', authenticateUser, async)
+app.post('/solarTerm', authenticateUser, createSolarTerm)
+app.post('/solarTermsDates', authenticateUser, batchCreateSolarTermsDates)
+app.patch('/solarTerm', authenticateUser, updateSolarTerm)
+app.get('/solarTerms', authenticateUser, listSolarTerms)
+app.get('/solarTermsDates', authenticateUser, listSolarTermsDates)
+app.get('/nextSolarTerm', authenticateUser, getNextSolarTerm)
+app.put('/solarTerm', authenticateUser, deleteSolarTerm)
+app.delete('/solarTerm', authenticateUser, destroySolarTerm)
+app.put('/solarTermDate', authenticateUser, deleteSolarTermDate)
+app.delete('/solarTermDate', authenticateUser, destroySolarTermDate)
 
 /**
- * 创建 event
+ * 事件
  */
-app.post('/events', authenticateUser, async (c) => {
-  const userId = c.get('userId')
-  const createForm = await c.req.json<EventType>()
-  assert(createForm, eventSchema)
-
-  const { name, isLoop, isPin } = createForm
-  const eventId = uuidv7()
-  const timestampStr = time().format('yyyy-MM-dd HH:mm:ss fff')
-  const newEvent = { id: eventId, name, isLoop, isPin, gmt_create: timestampStr, gmt_modified: timestampStr, userId }
-
-  const db = drizzle(env.db_for_croissant)
-  // db.insert()
-
-  return c.json(newEvent)
-})
+app.post('/event', authenticateUser, createEvent)
+app.post('/eventDate', authenticateUser, createEventDate)
+app.patch('/event', authenticateUser, updateEvent)
+app.get('/events', authenticateUser, listEvents)
+app.get('/activeEventDates', authenticateUser, listActiveEventsDates)
+app.put('/event', authenticateUser, deleteEvent)
+app.delete('/event', authenticateUser, destroyEvent)
+app.put('/invalidEventDate', authenticateUser, invalidEventDate)
+app.put('/eventDate', authenticateUser, deleteEventDate)
+app.delete('/eventDate', authenticateUser, destroyEventDate)
 
 /**
- * 获取 event
+ * 诗句
  */
-app.get('/events', authenticateUser, async (c) => {
-  const userId = c.get('userId')
-  const userKeys = await env.kv_for_croissant.list({ prefix: `${userId}` })
-  const userEvents = await Promise.all(userKeys.keys.map(({ name }) => env.kv_for_croissant.get(name)))
-  return c.json(userEvents)
-})
+app.post('/poetryLine', authenticateUser, createPoetryLine)
+app.patch('/poetryLine', authenticateUser, updatePoetryLine)
+app.get('/poetryLine/:status', authenticateUser, listPoetryLines)
+app.get('/poetryLine/next', authenticateUser, getNextPoetryLine)
+app.put('/poetryLine', authenticateUser, deltePoetryLine)
+app.delete('/event', authenticateUser, destroyPoetryLine)
 
 /**
- * query user pin
+ * 假期
  */
-app.get('/greeting/:pin', async (c) => {
-  const pin = c.req.param('pin');
-  // pin -> userId
-  // userId -> events
-  const db = drizzle(env.db_for_croissant)
-  const pins = await db.select().from(usersPin).all()
-  return c.json(pins)
-})
+app.post('/holiday', authenticateUser, createHoliday)
+app.post('/holidaysDates', authenticateUser, batchCreateHolidaysDates)
+app.patch('/holiday', authenticateUser, updateHoliday)
+app.get('/holidays', authenticateUser, listHolidays)
+app.get('/holidaysDates', authenticateUser, listHolidaysDates)
+app.get('/nextHoliday', authenticateUser, getNextHoliday)
+app.put('/holiday', authenticateUser, deleteHoliday)
+app.delete('/holiday', authenticateUser, destroyHoliday)
+app.put('/holidayDate', authenticateUser, deleteHolidayDate)
+app.delete('/holidayDate', authenticateUser, destroyHolidayDate)
 
-// Only for preview
-app.get('/me', authenticateUser,(c) => {
-  const userId = c.get('userId')
-  console.log(userId)
-  return c.text("hello gua, " + userId)
-})
+/**
+ * Greeting
+ */
+app.get('/greeting/:pin', greeting)
 
-app.get('/error', (c) => {
-  throw new CoolerError(401, "I got an arrow on my kneee.")
-})
+// 异常处理
+app.onError(errorHandler)
 
-app.get('/error2', (c) => {
-  throw new CoolerError(500, "I am sad :( ")
-})
+// 允许跨域
+app.use('*', cors({ origin: '*', maxAge: 3600 * 6, credentials: true }))
 
 export default app
+
+
