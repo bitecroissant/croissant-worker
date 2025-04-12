@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "hono": "4.7.6",
+    "jose": "6.0.10",
     "superstruct": "2.0.2",
     "uuid": "11.1.0"
   },
