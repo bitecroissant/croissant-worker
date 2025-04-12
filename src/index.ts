@@ -1,47 +1,59 @@
+import { env } from 'cloudflare:workers'
 import { Hono } from 'hono'
+import { v7 as uuidv7 } from 'uuid'
+import { solarTerms } from '../seeds/solarTerms'
+import { time } from './lib/time'
 
 const app = new Hono()
 
-// SolarTerms
-const solarTerms = [
-  { name: '立春', emoji: '🌱', index: 1 },
-  { name: '雨水', emoji: '💦', index: 2 },
-  { name: '惊蛰', emoji: '🐛', index: 3 },
-  { name: '春分', emoji: '🌧️', index: 4 },
+type EventType = {
+  name: string
+  // 循环
+  isLoop: boolean
+  // 置顶
+  isPin: boolean
+}
 
-  { name: '清明', emoji: '🌸', index: 5 },
-  { name: '谷雨', emoji: '🌾', index: 6 },
-  { name: '立夏', emoji: '🍉', index: 7 },
-  { name: '小满', emoji: '🌻', index: 8 },
+app.post('/events/:user_id', async (c) => {
+  const userId = c.req.param('user_id')
+  if (!userId) {
+    throw new Error('Missing user id.')
+  }
+  const createForm = await c.req.json<EventType>()
+  const { name, isLoop, isPin } = createForm 
+  if (!name) {
+    throw new Error('Missing event name.')
+  }
+  const eventId = uuidv7()
+  const timestampStr = time().format('yyyy-MM-dd HH:mm:ss fff')
+  const newEvent = { id: eventId, name, isLoop, isPin, gmt_create: timestampStr, gmt_modified: timestampStr, userId }
+  await env.kv_for_croissant.put(`${userId}_${eventId}`, JSON.stringify(newEvent))
 
-  { name: '芒种', emoji: '👨‍🌾', index: 9 },
-  { name: '夏至', emoji: '☀️', index: 10 },
-  { name: '小暑', emoji: '🌡️', index: 11 },
-  { name: '大暑', emoji: '🥵', index: 12 },
+  return c.json(newEvent)
+})
 
-  { name: '立秋', emoji: '🍂', index: 13 },
-  { name: '处暑', emoji: '🌥️', index: 14 },
-  { name: '白露', emoji: '💧', index: 15 },
-  { name: '秋分', emoji: '🌕', index: 16 },
-
-  { name: '寒露', emoji: '🌫️', index: 17 },
-  { name: '霜降', emoji: '❄️', index: 18},
-  { name: '立冬', emoji: '⛄', index: 19 },
-  { name: '小雪', emoji: '🌨️', index: 20 },
-
-  { name: '大雪', emoji: '🏔️', index: 21 },
-  { name: '冬至', emoji: '☃️', index: 22 },
-  { name: '小寒', emoji: '🧤', index: 23 },
-  { name: '大寒', emoji: '🌬️', index: 24 },
-
-]
+app.get('/events/:user_id', async (c) => {
+  const userId = c.req.param('user_id')
+  const userKeys = await env.kv_for_croissant.list({ prefix: `${userId}` })
+  const userEvents = await Promise.all(userKeys.keys.map(({ name }) => env.kv_for_croissant.get(name)))
+  return c.json(userEvents)
+})
 
 app.get('/', (c) => {
   return c.json({ msg: 'Hello Hono! 中文' })
 })
 
-app.get('/x', (c) => {
+app.get('/q', (c) => {
   return c.json(solarTerms)
+})
+
+app.get('/w', async (c) => {
+  // Get time
+  const randomStr = new Date().getTime().toString().slice(-4)
+  console.log(`randomStr=${randomStr}`)
+  await env.kv_for_croissant.put(`k${randomStr}`, `v${randomStr}`)
+  const kList = await env.kv_for_croissant.list()
+  return c.json(kList.keys)
 })
 
 export default app
