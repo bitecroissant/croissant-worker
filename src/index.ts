@@ -3,8 +3,39 @@ import { Hono } from 'hono'
 import { v7 as uuidv7 } from 'uuid'
 import { solarTerms } from '../seeds/solarTerms'
 import { time } from './lib/time'
+import { ContentfulStatusCode } from 'hono/utils/http-status'
+import { assert, boolean, object, optional, string, StructError } from 'superstruct'
 
 const app = new Hono()
+
+class CoolerError extends Error {
+  constructor(public status: ContentfulStatusCode, public message: string) {
+    super(message)
+    this.name = 'CoolerError'
+  }
+}
+
+app.onError((error, c) => {
+  let status: ContentfulStatusCode = 500
+  if (error instanceof CoolerError) {
+    status = error.status
+  } else if (error instanceof StructError) {
+    status = 400
+  }
+  return c.json({ error: error.message }, status)
+})
+
+app.get('/', (c) => {
+  return c.text("hello gua")
+})
+
+app.get('/error', (c) => {
+  throw new CoolerError(401, "I got an arrow on my kneee.")
+})
+
+app.get('/error2', (c) => {
+  throw new CoolerError(500, "I am sad :( ")
+})
 
 type EventType = {
   name: string
@@ -14,16 +45,22 @@ type EventType = {
   isPin: boolean
 }
 
+const eventSchema = object({
+  name: string(),
+  isLoop: optional(boolean()),
+  isPin: optional(boolean()),
+})
+
+
 app.post('/events/:user_id', async (c) => {
   const userId = c.req.param('user_id')
-  if (!userId) {
-    throw new Error('Missing user id.')
-  }
+  // if (!userId) {
+  //   throw new Error('Missing user id.')
+  // }
   const createForm = await c.req.json<EventType>()
-  const { name, isLoop, isPin } = createForm 
-  if (!name) {
-    throw new Error('Missing event name.')
-  }
+  assert(createForm, eventSchema)
+
+  const { name, isLoop, isPin } = createForm
   const eventId = uuidv7()
   const timestampStr = time().format('yyyy-MM-dd HH:mm:ss fff')
   const newEvent = { id: eventId, name, isLoop, isPin, gmt_create: timestampStr, gmt_modified: timestampStr, userId }
@@ -39,9 +76,7 @@ app.get('/events/:user_id', async (c) => {
   return c.json(userEvents)
 })
 
-app.get('/', (c) => {
-  return c.json({ msg: 'Hello Hono! 中文' })
-})
+
 
 app.get('/q', (c) => {
   return c.json(solarTerms)
