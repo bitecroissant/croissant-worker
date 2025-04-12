@@ -19,6 +19,12 @@
       "preview_id": "160aad51e6714323a34bb6901d6f8882"
     }
   ],
+  "routes": [
+    {
+      "pattern": "api.bytejelly.uno",
+      "custom_domain": true
+    }
+  ]
   // "r2_buckets": [
   //   {
   //     "binding": "MY_BUCKET",
