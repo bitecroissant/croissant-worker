@@ -1,19 +1,19 @@
 import { env } from 'cloudflare:workers'
 import { Hono } from 'hono'
 import { v7 as uuidv7 } from 'uuid'
-import { solarTerms } from '../seeds/solarTerms'
 import { time } from './lib/time'
 import { ContentfulStatusCode } from 'hono/utils/http-status'
 import { assert, boolean, object, optional, string, StructError } from 'superstruct'
+import { authenticateUser } from './middleware'
+import { CoolerError } from './CustomerError'
 
-const app = new Hono()
-
-class CoolerError extends Error {
-  constructor(public status: ContentfulStatusCode, public message: string) {
-    super(message)
-    this.name = 'CoolerError'
+type Context = {
+  Variables: {
+    jwt: string
+    user_id: string
   }
 }
+const app = new Hono<Context>()
 
 app.onError((error, c) => {
   let status: ContentfulStatusCode = 500
@@ -23,18 +23,6 @@ app.onError((error, c) => {
     status = 400
   }
   return c.json({ error: error.message }, status)
-})
-
-app.get('/', (c) => {
-  return c.text("hello gua")
-})
-
-app.get('/error', (c) => {
-  throw new CoolerError(401, "I got an arrow on my kneee.")
-})
-
-app.get('/error2', (c) => {
-  throw new CoolerError(500, "I am sad :( ")
 })
 
 type EventType = {
@@ -51,12 +39,11 @@ const eventSchema = object({
   isPin: optional(boolean()),
 })
 
-
-app.post('/events/:user_id', async (c) => {
-  const userId = c.req.param('user_id')
-  // if (!userId) {
-  //   throw new Error('Missing user id.')
-  // }
+/**
+ * 创建 event
+ */
+app.post('/events', authenticateUser, async (c) => {
+  const userId = c.get('user_id')
   const createForm = await c.req.json<EventType>()
   assert(createForm, eventSchema)
 
@@ -69,26 +56,31 @@ app.post('/events/:user_id', async (c) => {
   return c.json(newEvent)
 })
 
-app.get('/events/:user_id', async (c) => {
-  const userId = c.req.param('user_id')
+/**
+ * 获取 event
+ */
+app.get('/events', authenticateUser, async (c) => {
+  const userId = c.get('user_id')
   const userKeys = await env.kv_for_croissant.list({ prefix: `${userId}` })
   const userEvents = await Promise.all(userKeys.keys.map(({ name }) => env.kv_for_croissant.get(name)))
   return c.json(userEvents)
 })
 
-
-
-app.get('/q', (c) => {
-  return c.json(solarTerms)
+// Only for preview
+app.get('/', authenticateUser,(c) => {
+  const jwt = c.get('jwt')
+  const userId = c.get('user_id')
+  console.log(jwt)
+  console.log(userId)
+  return c.text("hello gua, " + jwt + " " + userId)
 })
 
-app.get('/w', async (c) => {
-  // Get time
-  const randomStr = new Date().getTime().toString().slice(-4)
-  console.log(`randomStr=${randomStr}`)
-  await env.kv_for_croissant.put(`k${randomStr}`, `v${randomStr}`)
-  const kList = await env.kv_for_croissant.list()
-  return c.json(kList.keys)
+app.get('/error', (c) => {
+  throw new CoolerError(401, "I got an arrow on my kneee.")
+})
+
+app.get('/error2', (c) => {
+  throw new CoolerError(500, "I am sad :( ")
 })
 
 export default app
