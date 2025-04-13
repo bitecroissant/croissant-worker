@@ -19,15 +19,15 @@ export const events = sqliteTable('events', {
   delete_flag: int(),
   active_status: text(),
   name: text(),
-  isLoop: int(),
-  isPin: int(),
+  is_loop: int(),
+  is_pin: int(),
   creator: text(),
   emoji: text(),
-  iconName: text(),
-  iconColor: text(),
+  icon_name: text(),
+  icon_color: text(),
 })
 
-export const eventDates = sqliteTable('eventDates', {
+export const eventDates = sqliteTable('event_dates', {
   id: text().primaryKey(),
   gmt_create: text(),
   gmt_modified: text(),
@@ -40,7 +40,7 @@ export const eventDates = sqliteTable('eventDates', {
   creator: text(),
 })
 
-export const solarTerms = sqliteTable('solarTerms', {
+export const solarTerms = sqliteTable('solar_terms', {
   id: text().primaryKey(),
   gmt_create: text(),
   gmt_modified: text(),
@@ -48,12 +48,12 @@ export const solarTerms = sqliteTable('solarTerms', {
   index: int(),
   emoji: text(),
   name: text(),
-  enName: text(),
+  en_name: text(),
   meaning: text(),
-  meteorologicalChanges: text(),
-  relatedVerses: text(),
+  meteorological_changes: text(),
+  related_verses: text(),
   custom: text(),
-  recommendedFoods: text(),
+  recommended_foods: text(),
   addition: text(),
   creator: text(),
 })
@@ -68,7 +68,7 @@ export const holidays = sqliteTable('holidays', {
   creator: text(),
 })
 
-export const poetryLines = sqliteTable('poetryLines', {
+export const poetryLines = sqliteTable('poetry_lines', {
   id: text().primaryKey(),
   gmt_create: text(),
   gmt_modified: text(),
@@ -78,6 +78,6 @@ export const poetryLines = sqliteTable('poetryLines', {
   author: text(),
   dynasty: text(),
   title: text(),
-  showDate: text(),
+  show_date: text(),
   creator: text(),
 })

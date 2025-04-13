@@ -15,6 +15,13 @@
       "when": 1744453377394,
       "tag": "0001_noisy_sunset_bain",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1744542943028,
+      "tag": "0002_nice_lilith",
+      "breakpoints": true
     }
   ]
 }
