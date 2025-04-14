@@ -17,9 +17,7 @@ type Context = {
 const app = new Hono<Context>()
 
 // 允许跨域
-
-// 允许跨域
-app.use('*', cors({ origin: '*', maxAge: 3600 * 6, credentials: true }))
+app.use('*', cors({ origin: '*', allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], allowHeaders: ["Content-Type", "Authorization"], maxAge: 3600 * 6, credentials: true }))
 
 /**
  * 24节气
