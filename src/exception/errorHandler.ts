@@ -10,5 +10,5 @@ export const errorHandler: ErrorHandler = (error, c) => {
   } else if (error instanceof StructError) {
     status = 400
   }
-  return c.json({ error: error.message }, status)
+  return c.json({ error: error.message || '这是一个默认的报错文案，你本来不应该看到我' }, status)
 }

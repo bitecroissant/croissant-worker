@@ -1,7 +1,7 @@
 import { sqliteTable, text, int } from 'drizzle-orm/sqlite-core'
 
 // table 用户的免登录口令
-export const usersPin = sqliteTable('users_pin', {
+export const usersPinTable = sqliteTable('users_pin', {
   id: text().primaryKey(),
   gmt_create: text(),
   gmt_modified: text(),
@@ -12,12 +12,12 @@ export const usersPin = sqliteTable('users_pin', {
   creator: text(),
 })
 
-export const events = sqliteTable('events', {
+export const eventsTable = sqliteTable('events', {
   id: text().primaryKey(),
   gmt_create: text(),
   gmt_modified: text(),
   delete_flag: int(),
-  active_status: text(),
+  is_active: int(),
   name: text(),
   is_loop: int(),
   is_pin: int(),
@@ -27,7 +27,7 @@ export const events = sqliteTable('events', {
   icon_color: text(),
 })
 
-export const eventDates = sqliteTable('event_dates', {
+export const eventDatesTable = sqliteTable('event_dates', {
   id: text().primaryKey(),
   gmt_create: text(),
   gmt_modified: text(),
@@ -40,7 +40,7 @@ export const eventDates = sqliteTable('event_dates', {
   creator: text(),
 })
 
-export const solarTerms = sqliteTable('solar_terms', {
+export const solarTermsTable = sqliteTable('solar_terms', {
   id: text().primaryKey(),
   gmt_create: text(),
   gmt_modified: text(),
@@ -58,7 +58,7 @@ export const solarTerms = sqliteTable('solar_terms', {
   creator: text(),
 })
 
-export const holidays = sqliteTable('holidays', {
+export const holidaysTable = sqliteTable('holidays', {
   id: text().primaryKey(),
   gmt_create: text(),
   gmt_modified: text(),
@@ -68,7 +68,7 @@ export const holidays = sqliteTable('holidays', {
   creator: text(),
 })
 
-export const poetryLines = sqliteTable('poetry_lines', {
+export const poetryLinesTable = sqliteTable('poetry_lines', {
   id: text().primaryKey(),
   gmt_create: text(),
   gmt_modified: text(),
