@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { authenticateUser } from './middleware'
 import { cors } from 'hono/cors'
 import { batchCreateSolarTermsDates, createSolarTerm, getNextSolarTerm, listSolarTerms, listSolarTermsDates, updateSolarTerm, deleteSolarTerm, destroySolarTerm, deleteSolarTermDate, destroySolarTermDate } from './module/solarTermsFacade'
-import { createEvent, createEventDate, deleteEvent, deleteEventDate, destroyEvent, destroyEventDate, invalidEventDate, listActiveEventsDates, listEvents, updateEvent } from './module/eventsFacade'
+import { createEvent, createEventDate, deleteEvent, deleteEventDate, getEventById, listEventDates, listEvents, updateEvent, updateEventDate } from './module/eventsFacade'
 import { createPoetryLine, deltePoetryLine, destroyPoetryLine, getNextPoetryLine, listPoetryLines, updatePoetryLine } from './module/poetryLinesFacade'
 import { greeting } from './module/greetingFacade'
 import { batchCreateHolidaysDates, createHoliday, deleteHoliday, deleteHolidayDate, destroyHoliday, destroyHolidayDate, getNextHoliday, listHolidays, listHolidaysDates, updateHoliday } from './module/holidayFacade'
@@ -10,14 +10,27 @@ import { errorHandler } from './exception/errorHandler'
 
 type Context = {
   Variables: {
-    userId: string
+    user_id: string
   }
 }
 
 const app = new Hono<Context>()
 
 // 允许跨域
-app.use('*', cors({ origin: '*', allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], allowHeaders: ["Content-Type", "Authorization"], maxAge: 3600 * 6, credentials: true }))
+app.use('/v1/*', cors())
+
+/**
+ * 事件
+ */
+app.post('/v1/event', authenticateUser, createEvent)
+app.get('/v1/events', authenticateUser, listEvents)
+app.get('/v1/event/:id', authenticateUser, getEventById)
+app.put('/v1/event/:id', authenticateUser, updateEvent)
+app.post('/v1/event_date', authenticateUser, createEventDate)
+app.get('/v1/event_dates/:event_id', authenticateUser, listEventDates)
+app.delete('/v1/event_date/:id', authenticateUser, deleteEventDate)
+app.put('/v1/event_date/:id', authenticateUser, updateEventDate)
+app.delete('/v1/event/:id', authenticateUser, deleteEvent)
 
 /**
  * 24节气
@@ -32,20 +45,6 @@ app.put('/v1/solarTerm', authenticateUser, deleteSolarTerm)
 app.delete('/v1/solarTerm', authenticateUser, destroySolarTerm)
 app.put('/v1/solarTermDate', authenticateUser, deleteSolarTermDate)
 app.delete('/v1/solarTermDate', authenticateUser, destroySolarTermDate)
-
-/**
- * 事件
- */
-app.post('/v1/event', authenticateUser, createEvent)
-app.post('/v1/eventDate', authenticateUser, createEventDate)
-app.patch('/v1/event', authenticateUser, updateEvent)
-app.get('/v1/events', authenticateUser, listEvents)
-app.get('/v1/activeEventDates', authenticateUser, listActiveEventsDates)
-app.put('/v1/event', authenticateUser, deleteEvent)
-app.delete('/v1/event', authenticateUser, destroyEvent)
-app.put('/v1/invalidEventDate', authenticateUser, invalidEventDate)
-app.put('/v1/eventDate', authenticateUser, deleteEventDate)
-app.delete('/v1/eventDate', authenticateUser, destroyEventDate)
 
 /**
  * 诗句

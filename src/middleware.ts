@@ -19,6 +19,6 @@ export const authenticateUser: MiddlewareHandler = async (c, next) => {
   if (!payload) { throw new CoolerError(422, '🙈 你的门票过不了闸机(内容不合法）') }
   const { sub } = payload
   if (!sub) { throw new CoolerError(422, '🙈 你的门票过不了闸机(用户信息不对)') }
-  c.set('userId', sub)
+  c.set('user_id', sub)
   await next()
 }
