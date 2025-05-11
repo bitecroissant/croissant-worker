@@ -33,7 +33,7 @@ export const eventDatesTable = sqliteTable('event_dates', {
   gmt_modified: text(),
   delete_flag: int(),
   is_active: int(),
-  // event, solarTerm, holiday
+  // event, solar_term, holiday
   type: text(),
   events_id: text(),
   happen_at: text(),

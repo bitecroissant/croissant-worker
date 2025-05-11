@@ -33,7 +33,7 @@ interface EventDate {
   creator: string
   events_id: string
   happen_at: string
-  // event, solarTerm, holiday
+  // event, solar_term, holiday
   type: string
 }
 
@@ -48,7 +48,7 @@ const eventSchema = object({
   is_active: optional(boolean()),
 })
 
-const eventDateSchema = object({
+export const eventDateSchema = object({
   events_id: string(),
   happen_at: string()
 })
@@ -116,9 +116,7 @@ export const updateEvent = async (c: Context) => {
   const user_id = c.get('user_id')
   const eventId = c.req.param('id')
   const updateForm = await c.req.json<Event>()
-  console.log(JSON.stringify(updateForm))
   assert(updateForm, eventSchema)
-  console.log('2222')
   const { name, is_loop, is_pin, emoji, icon_name, icon_color, is_active, } = updateForm
   const timestampStr = time().format('yyyy-MM-dd HH:mm:ss')
   const db = drizzle(env.db_for_croissant)
@@ -167,7 +165,7 @@ export const deleteEventDate = async (c: Context) => {
   const timestampStr = time().format('yyyy-MM-dd HH:mm:ss')
   const db = drizzle(env.db_for_croissant)
   const event_dates = await db.select().from(eventDatesTable).where(and(eq(eventDatesTable.id, event_date_id), eq(eventDatesTable.creator, user_id), eq(eventDatesTable.delete_flag, 0)))
-  if (event_dates.length < 1) { throw new CoolerError(401, '™️ 不可能给你删除!') }
+  if (event_dates.length < 1) { throw new CoolerError(401, '☄️ 没找到遥控器，删除失败') }
   const x = await db.update(eventDatesTable).set({ delete_flag: 1, gmt_modified: timestampStr, }).where(and(eq(eventDatesTable.id, event_date_id), eq(eventDatesTable.creator, user_id), eq(eventDatesTable.delete_flag, 0)))
   return c.json({ resource: x })
 }
