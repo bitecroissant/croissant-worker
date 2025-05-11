@@ -25,9 +25,8 @@ export const greeting = async (c: Context) => {
     .orderBy(desc(eventsTable.is_pin), desc(eventsTable.is_loop), desc(eventsTable.is_active), desc(eventsTable.gmt_create))
 
   // 节气
-  const startOfTodayDate = time().removeTime().date
-  const todayTime = time(startOfTodayDate)
-  const todayStr = todayTime.format()
+  const startOfTodayTime = time().removeTime()
+  const todayStr = startOfTodayTime.format()
 
   const sq2 = db.select().from(eventDatesTable)
     .where(and(eq(eventDatesTable.type, 'solar_term'),
@@ -47,7 +46,7 @@ export const greeting = async (c: Context) => {
 
   const response: any = {
     "severTime": todayStr,
-    "下一个节气": todayTime.calcNaturalDaysBetween(time(d.happen_at)),
+    "下一个节气": startOfTodayTime.calcNaturalDaysBetween(time(d.happen_at)),
     "节气顺序": s.index,
     "emoji": s.emoji,
     "节气名": s.name,
@@ -61,7 +60,7 @@ export const greeting = async (c: Context) => {
   }
   eventWithDates.forEach(({ events, event_dates }) => {
     (events.name && event_dates?.happen_at) 
-      && (response[events.name] = todayTime.calcNaturalDaysBetween(time(event_dates?.happen_at)))
+      && (response[events.name] = startOfTodayTime.calcNaturalDaysBetween(time(event_dates?.happen_at)))
   })
 
   return c.json(response)
