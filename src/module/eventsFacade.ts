@@ -92,7 +92,7 @@ export const listEvents = async (c: Context) => {
   const user_id = c.get('user_id')
 
   const db = drizzle(env.db_for_croissant)
-  const sq = db.select().from(eventDatesTable).where(and(eq(eventDatesTable.creator, user_id), eq(eventDatesTable.is_active, 1), eq(eventDatesTable.delete_flag, 0))).as('event_dates')
+  const sq = db.select().from(eventDatesTable).where(and(eq(eventDatesTable.creator, user_id), eq(eventDatesTable.type, 'event'), eq(eventDatesTable.is_active, 1), eq(eventDatesTable.delete_flag, 0))).as('event_dates')
   const eventWithDates = await db.select().from(eventsTable)
     .leftJoin(sq, eq(eventsTable.id, sq.events_id))
     .where(and(eq(eventsTable.creator, user_id), eq(eventsTable.delete_flag, 0)))

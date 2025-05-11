@@ -138,19 +138,3 @@ export const createSolarTermsDates = async (c: Context) => {
   await db.insert(eventDatesTable).values(newEventDate)
   return c.json({ rources: newEventDate })
 }
-
-export const destroySolarTerm = async (c: Context) => {
-}
-
-export const getNextSolarTerm = async (c: Context) => {
-}
-
-
-
-
-
-export const deleteSolarTermDate = async (c: Context) => {
-}
-
-export const destroySolarTermDate = async (c: Context) => {
-}

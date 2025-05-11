@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { authenticateUser } from './middleware'
 import { cors } from 'hono/cors'
-import { createSolarTermsDates, createSolarTerm, getNextSolarTerm, listSolarTerms, listSolarTermsDatesByYear, updateSolarTerm, deleteSolarTerm, destroySolarTerm, deleteSolarTermDate, destroySolarTermDate, batchCreateSolarTerm, getSolarTermById } from './module/solarTermsFacade'
+import { createSolarTermsDates, createSolarTerm, listSolarTerms, updateSolarTerm, deleteSolarTerm, batchCreateSolarTerm, getSolarTermById } from './module/solarTermsFacade'
 import { createEvent, createEventDate, deleteEvent, deleteEventDate, getEventById, listEventDates, listEvents, updateEvent, updateEventDate } from './module/eventsFacade'
 import { createPoetryLine, deltePoetryLine, destroyPoetryLine, getNextPoetryLine, listPoetryLines, updatePoetryLine } from './module/poetryLinesFacade'
 import { greeting } from './module/greetingFacade'
@@ -43,10 +43,10 @@ app.put('/v1/solar_term/:id', authenticateUser, updateSolarTerm)
 app.delete('/v1/solar_term/:id', authenticateUser, deleteSolarTerm)
 app.put('/v1/solar_terms_dates', authenticateUser, createSolarTermsDates)
 
-app.patch('/v1/solarTerm', authenticateUser, updateSolarTerm)
-app.get('/v1/nextSolarTerm', authenticateUser, getNextSolarTerm)
-app.put('/v1/solarTermDate', authenticateUser, deleteSolarTermDate)
-app.delete('/v1/solarTermDate', authenticateUser, destroySolarTermDate)
+/**
+ * Greeting
+ */
+app.get('/v1/greeting/:pin', greeting)
 
 /**
  * 诗句
@@ -72,10 +72,6 @@ app.delete('/v1/holiday', authenticateUser, destroyHoliday)
 app.put('/v1/holidayDate', authenticateUser, deleteHolidayDate)
 app.delete('/v1/holidayDate', authenticateUser, destroyHolidayDate)
 
-/**
- * Greeting
- */
-app.get('/v1/greeting/:pin', greeting)
 
 // 异常处理
 app.onError(errorHandler)

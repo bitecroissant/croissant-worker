@@ -36,7 +36,7 @@ export class Time {
     const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
     // 转换为北京时间（UTC+8）
     const beijingDate = new Date(utcDate.getTime() + 8 * 3600000);
-    this.#date = beijingDate;
+    this.#date = utcDate;
   }
 
   get date() {
