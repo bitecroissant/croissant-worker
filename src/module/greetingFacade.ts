@@ -9,12 +9,19 @@ import { CoolerError } from "../CustomerError";
 
 export const greeting = async (c: Context) => {
   const pin = c.req.param('pin')
-  const timestampStr = time().format('yyyy-MM-dd HH:mm:ss')
   const db = drizzle(env.db_for_croissant)
   const pinResults = await db.select().from(usersPinTable)
     .where(and(eq(usersPinTable.pin, pin), eq(usersPinTable.delete_flag, 0), eq(usersPinTable.is_active, 1)))
   if (pinResults.length < 1) { throw new CoolerError(401, '🌋 是不是有病？') }
+
   const user_id = pinResults[0].uid || ''
+  const startOfTodayTime = time().removeTime()
+  const todayStr = startOfTodayTime.format()
+
+  let response: any = {
+    // user_id,
+    "severTime": todayStr,
+  }
   // 事件 & 日期
   const sq = db.select().from(eventDatesTable)
     .where(and(eq(eventDatesTable.creator, user_id), eq(eventDatesTable.type, 'event'), eq(eventDatesTable.is_active, 1), eq(eventDatesTable.delete_flag, 0)))
@@ -23,11 +30,15 @@ export const greeting = async (c: Context) => {
     .leftJoin(sq, eq(eventsTable.id, sq.events_id))
     .where(and(eq(eventsTable.creator, user_id), eq(eventsTable.delete_flag, 0)))
     .orderBy(desc(eventsTable.is_pin), desc(eventsTable.is_loop), desc(eventsTable.is_active), desc(eventsTable.gmt_create))
+  eventWithDates.forEach(({ events, event_dates }) => {
+    (events.name && event_dates?.happen_at)
+      && (response[events.name] = startOfTodayTime.calcNaturalDaysBetween(time(event_dates?.happen_at)))
+  })
+  response = {
+    ...response,
+  }
 
   // 节气
-  const startOfTodayTime = time().removeTime()
-  const todayStr = startOfTodayTime.format()
-
   const sq2 = db.select().from(eventDatesTable)
     .where(and(eq(eventDatesTable.type, 'solar_term'),
       eq(eventDatesTable.is_active, 1), eq(eventDatesTable.delete_flag, 0),
@@ -39,13 +50,11 @@ export const greeting = async (c: Context) => {
   const solarTermsWithDates = await db.select().from(solarTermsTable)
     .rightJoin(sq2, eq(solarTermsTable.id, sq2.events_id))
     .where(and(eq(solarTermsTable.delete_flag, 0)))
-  
-  const { solar_terms: s, solar_term_dates: d } = solarTermsWithDates[0] 
-
+  const { solar_terms: s, solar_term_dates: d } = solarTermsWithDates[0]
   if (!s || !d || !d.happen_at) { throw new CoolerError(401, '🌋 是不是有病？') }
 
-  const response: any = {
-    "severTime": todayStr,
+  response = {
+    ...response,
     "下一个节气": startOfTodayTime.calcNaturalDaysBetween(time(d.happen_at)),
     "节气顺序": s.index,
     "emoji": s.emoji,
@@ -55,13 +64,9 @@ export const greeting = async (c: Context) => {
     "节气气象表现": s.meteorological_changes,
     "节气相关诗句": s.related_verses,
     "节气风俗习惯": s.custom,
-    "节气美食": s.recommended_foods, 
+    "节气美食": s.recommended_foods,
     "节气补充说明": s.addition,
   }
-  eventWithDates.forEach(({ events, event_dates }) => {
-    (events.name && event_dates?.happen_at) 
-      && (response[events.name] = startOfTodayTime.calcNaturalDaysBetween(time(event_dates?.happen_at)))
-  })
 
   return c.json(response)
 }
